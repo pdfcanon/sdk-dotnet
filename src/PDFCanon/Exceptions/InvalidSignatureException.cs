@@ -1,0 +1,10 @@
+namespace PDFCanon.Exceptions;
+
+/// <summary>Thrown when a webhook signature fails verification.</summary>
+public sealed class InvalidSignatureException : PDFCanonException
+{
+    public InvalidSignatureException(string message)
+        : base(message, requestId: null)
+    {
+    }
+}

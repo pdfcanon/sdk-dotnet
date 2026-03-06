@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PDFCanon/PDFCanon.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PDFCanon.Tests/PDFCanon.Tests.csproj" />
+  </Folder>
+</Solution>
