@@ -226,6 +226,9 @@ public sealed class PDFCanonClient : IDisposable
 
             if (options.IdempotencyKey is not null)
                 content.Add(new StringContent(options.IdempotencyKey), "idempotency_key");
+
+            if (options.SignedPdfPolicy is not null)
+                content.Add(new StringContent(options.SignedPdfPolicy), "signed_pdf_policy");
         }
 
         return content;

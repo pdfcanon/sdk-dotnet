@@ -94,6 +94,15 @@ public sealed class SecurityInfo
 
     [JsonPropertyName("encryptedInput")]
     public bool EncryptedInput { get; set; }
+
+    [JsonPropertyName("digitalSignaturesDetected")]
+    public bool DigitalSignaturesDetected { get; set; }
+
+    [JsonPropertyName("digitalSignaturesRemoved")]
+    public bool DigitalSignaturesRemoved { get; set; }
+
+    [JsonPropertyName("signatureCount")]
+    public int SignatureCount { get; set; }
 }
 
 public sealed class ValidationInfo
