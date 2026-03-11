@@ -244,6 +244,9 @@ public sealed class PDFCanonClient : IDisposable
 
             if (options.SignedPdfPolicy is not null)
                 content.Add(new StringContent(options.SignedPdfPolicy), "signed_pdf_policy");
+
+            if (options.PdfaPolicy is not null)
+                content.Add(new StringContent(options.PdfaPolicy), "pdfa_policy");
         }
 
         return content;

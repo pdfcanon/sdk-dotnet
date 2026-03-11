@@ -119,6 +119,15 @@ public sealed class ValidationInfo
     [JsonPropertyName("nonEmbeddedFontsDetected")]
     public bool NonEmbeddedFontsDetected { get; set; }
 
+    [JsonPropertyName("pdfaDeclared")]
+    public bool PdfaDeclared { get; set; }
+
+    [JsonPropertyName("pdfaLevel")]
+    public string? PdfaLevel { get; set; }
+
+    [JsonPropertyName("pdfaPreserved")]
+    public bool PdfaPreserved { get; set; }
+
     [JsonPropertyName("pdfaCompliant")]
     public bool PdfaCompliant { get; set; }
 }

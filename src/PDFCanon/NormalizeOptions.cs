@@ -21,4 +21,13 @@ public sealed class NormalizeOptions
     /// </list>
     /// </summary>
     public string? SignedPdfPolicy { get; set; }
+
+    /// <summary>
+    /// Policy to apply when a PDF/A-compliant document is detected.
+    /// <list type="bullet">
+    ///   <item><term>preserve</term><description>Allow safe structural operations while preserving <c>pdfaid</c> XMP namespace elements (default).</description></item>
+    ///   <item><term>normalize_anyway</term><description>Perform full normalization including XMP stripping. Adds warning <c>PDF_A_COMPLIANCE_REMOVED</c>.</description></item>
+    /// </list>
+    /// </summary>
+    public string? PdfaPolicy { get; set; }
 }
