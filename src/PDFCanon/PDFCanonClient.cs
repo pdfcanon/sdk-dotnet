@@ -59,8 +59,7 @@ public sealed class PDFCanonClient : IDisposable
             _ownsHttpClient = true;
         }
 
-        _http.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", apiKey);
+        _http.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
         _http.DefaultRequestHeaders.Add("User-Agent", "pdfcanon-dotnet/1.0.0");
     }
 

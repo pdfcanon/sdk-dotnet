@@ -8,6 +8,16 @@ Official .NET SDK for the [PDFCanon](https://pdfcanon.io) API — normalize, san
 dotnet add package PDFCanon
 ```
 
+## Authentication
+
+Obtain an API key from the [PDFCanon portal](https://pdfcanon.io/portal/api-keys). Pass it to the client constructor or set the `PDFCANON_API_KEY` environment variable.
+
+The SDK sends the key as `X-Api-Key: pdfn_…` in every request. If you call the REST API directly, use the same header:
+
+```bash
+curl -H "X-Api-Key: pdfn_your_key_here" https://api.pdfcanon.io/api/submissions
+```
+
 ## Quickstart
 
 ```csharp
