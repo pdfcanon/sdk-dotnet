@@ -32,6 +32,9 @@ public sealed class NormalizeResponse
     [JsonPropertyName("validation")]
     public ValidationInfo? Validation { get; set; }
 
+    [JsonPropertyName("tamperAnalysis")]
+    public TamperAnalysisInfo? TamperAnalysis { get; set; }
+
     [JsonPropertyName("warnings")]
     public List<WarningInfo>? Warnings { get; set; }
 
@@ -191,4 +194,33 @@ public sealed class FailureInfo
 
     [JsonPropertyName("stage")]
     public string? Stage { get; set; }
+}
+
+/// <summary>Tamper analysis results from the pre-repair structural analysis.</summary>
+public sealed class TamperAnalysisInfo
+{
+    [JsonPropertyName("riskLevel")]
+    public string? RiskLevel { get; set; }
+
+    [JsonPropertyName("anomaliesDetected")]
+    public int AnomaliesDetected { get; set; }
+
+    [JsonPropertyName("anomalies")]
+    public List<TamperAnomalyInfo>? Anomalies { get; set; }
+}
+
+/// <summary>A single structural anomaly detected during tamper analysis.</summary>
+public sealed class TamperAnomalyInfo
+{
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("severity")]
+    public string? Severity { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("location")]
+    public string? Location { get; set; }
 }
