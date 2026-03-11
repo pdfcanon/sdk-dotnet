@@ -173,6 +173,14 @@ public sealed class ValidationInfo
 
     [JsonPropertyName("pdfaCompliant")]
     public bool PdfaCompliant { get; set; }
+
+    /// <summary>Whether veraPDF validation was performed and the document passed. Null when not performed.</summary>
+    [JsonPropertyName("verapdfValidated")]
+    public bool? VerapdfValidated { get; set; }
+
+    /// <summary>Specific errors reported by veraPDF. Empty or null when validation passed or was not performed.</summary>
+    [JsonPropertyName("verapdfErrors")]
+    public List<string>? VerapdfErrors { get; set; }
 }
 
 public sealed class WarningInfo
