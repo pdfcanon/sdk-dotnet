@@ -185,6 +185,63 @@ public sealed class PDFCanonClient : IDisposable
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Creates a new batch group for tracking bulk normalization workflows.</summary>
+    public async Task<BatchResponse> CreateBatchAsync(string? name = null, string? webhookUrl = null, CancellationToken ct = default)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            var payload = JsonSerializer.Serialize(new { name, webhook_url = webhookUrl });
+            using var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
+            using var response = await _http
+                .PostAsync("batches/", content, ct)
+                .ConfigureAwait(false);
+
+            return await ParseResponseAsync<BatchResponse>(response, ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Gets the status and progress counts for a batch group.</summary>
+    public async Task<BatchResponse> GetBatchAsync(Guid batchId, CancellationToken ct = default)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var response = await _http
+                .GetAsync($"batches/{batchId}", ct)
+                .ConfigureAwait(false);
+
+            return await ParseResponseAsync<BatchResponse>(response, ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Returns a paginated list of batch groups.</summary>
+    public async Task<ListBatchesResponse> ListBatchesAsync(string? status = null, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            var query = $"batches/?page={page}&page_size={pageSize}";
+            if (!string.IsNullOrEmpty(status)) query += $"&status={Uri.EscapeDataString(status)}";
+
+            using var response = await _http
+                .GetAsync(query, ct)
+                .ConfigureAwait(false);
+
+            return await ParseResponseAsync<ListBatchesResponse>(response, ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Returns a paginated list of submissions in a batch group.</summary>
+    public async Task<ListBatchSubmissionsResponse> ListBatchSubmissionsAsync(Guid batchId, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var response = await _http
+                .GetAsync($"batches/{batchId}/submissions?page={page}&page_size={pageSize}", ct)
+                .ConfigureAwait(false);
+
+            return await ParseResponseAsync<ListBatchSubmissionsResponse>(response, ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
+    }
+
     // -------------------------------------------------------------------------
     // Internals
     // -------------------------------------------------------------------------
@@ -249,6 +306,9 @@ public sealed class PDFCanonClient : IDisposable
 
             if (options.Linearize.HasValue)
                 content.Add(new StringContent(options.Linearize.Value ? "true" : "false"), "linearize");
+
+            if (options.BatchId.HasValue)
+                content.Add(new StringContent(options.BatchId.Value.ToString()), "batch_id");
         }
 
         return content;

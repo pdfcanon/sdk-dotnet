@@ -37,4 +37,11 @@ public sealed class NormalizeOptions
     /// Set to <c>false</c> to skip linearization.
     /// </summary>
     public bool? Linearize { get; set; }
+
+    /// <summary>
+    /// Optional batch group ID to link this submission to a batch created via
+    /// <see cref="PDFCanonClient.CreateBatchAsync"/>. When <c>null</c> (the default),
+    /// the submission is standalone.
+    /// </summary>
+    public Guid? BatchId { get; set; }
 }
