@@ -106,6 +106,43 @@ public sealed class SecurityInfo
 
     [JsonPropertyName("signatureCount")]
     public int SignatureCount { get; set; }
+
+    [JsonPropertyName("signatureVerificationResults")]
+    public List<SignatureVerificationResult>? SignatureVerificationResults { get; set; }
+
+    [JsonPropertyName("overallSignatureStatus")]
+    public string? OverallSignatureStatus { get; set; }
+}
+
+/// <summary>Cryptographic verification result for a single digital signature field.</summary>
+public sealed class SignatureVerificationResult
+{
+    [JsonPropertyName("fieldName")]
+    public string? FieldName { get; set; }
+
+    [JsonPropertyName("signerName")]
+    public string? SignerName { get; set; }
+
+    [JsonPropertyName("signedAt")]
+    public DateTimeOffset? SignedAt { get; set; }
+
+    [JsonPropertyName("valid")]
+    public bool Valid { get; set; }
+
+    [JsonPropertyName("certificateExpired")]
+    public bool CertificateExpired { get; set; }
+
+    [JsonPropertyName("certificateChainTrusted")]
+    public bool? CertificateChainTrusted { get; set; }
+
+    [JsonPropertyName("timestampPresent")]
+    public bool TimestampPresent { get; set; }
+
+    [JsonPropertyName("timestampValid")]
+    public bool? TimestampValid { get; set; }
+
+    [JsonPropertyName("reason")]
+    public string? Reason { get; set; }
 }
 
 public sealed class ValidationInfo
