@@ -30,4 +30,11 @@ public sealed class NormalizeOptions
     /// </list>
     /// </summary>
     public string? PdfaPolicy { get; set; }
+
+    /// <summary>
+    /// Whether to linearize (web-optimize) the output PDF.
+    /// When <c>null</c> (the default), the server default of <c>true</c> is used.
+    /// Set to <c>false</c> to skip linearization.
+    /// </summary>
+    public bool? Linearize { get; set; }
 }

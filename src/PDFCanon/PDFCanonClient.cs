@@ -246,6 +246,9 @@ public sealed class PDFCanonClient : IDisposable
 
             if (options.PdfaPolicy is not null)
                 content.Add(new StringContent(options.PdfaPolicy), "pdfa_policy");
+
+            if (options.Linearize.HasValue)
+                content.Add(new StringContent(options.Linearize.Value ? "true" : "false"), "linearize");
         }
 
         return content;
