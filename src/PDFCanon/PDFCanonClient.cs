@@ -171,6 +171,21 @@ public sealed class PDFCanonClient : IDisposable
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Downloads the signed attestation certificate (JWS) for the given normalized SHA-256.</summary>
+    public async Task<byte[]> GetCertificateAsync(string normalizedSha256, CancellationToken ct = default)
+    {
+        if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        return await ExecuteWithRetryAsync(async () =>
+        {
+            using var response = await _http
+                .GetAsync($"certificates/{normalizedSha256}", ct)
+                .ConfigureAwait(false);
+
+            await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+            return await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
+        }, ct).ConfigureAwait(false);
+    }
+
     // -------------------------------------------------------------------------
     // Internals
     // -------------------------------------------------------------------------
