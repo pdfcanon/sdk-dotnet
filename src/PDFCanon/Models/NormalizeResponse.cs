@@ -64,6 +64,9 @@ public sealed class NormalizedInfo
 
     [JsonPropertyName("downloadUrl")]
     public string? DownloadUrl { get; set; }
+
+    [JsonPropertyName("contentHash")]
+    public string? ContentHash { get; set; }
 }
 
 public sealed class SecurityInfo
