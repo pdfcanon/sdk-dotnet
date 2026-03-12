@@ -7,7 +7,7 @@ public sealed class PDFCanonClientOptions
     public string? ApiKey { get; set; }
 
     /// <summary>Base address of the PDFCanon API.</summary>
-    public Uri BaseAddress { get; set; } = new("https://api.pdfcanon.io/api/");
+    public Uri BaseAddress { get; set; } = new("https://api.pdfcanon.com/api/");
 
     /// <summary>Timeout for establishing a connection.</summary>
     public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(5);

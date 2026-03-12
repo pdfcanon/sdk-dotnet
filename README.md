@@ -1,6 +1,6 @@
 # PDFCanon .NET SDK
 
-Official .NET SDK for the [PDFCanon](https://pdfcanon.io) API — normalize, sanitize, and validate PDF files.
+Official .NET SDK for the [PDFCanon](https://pdfcanon.com) API — normalize, sanitize, and validate PDF files.
 
 ## Installation
 
@@ -10,12 +10,12 @@ dotnet add package PDFCanon
 
 ## Authentication
 
-Obtain an API key from the [PDFCanon portal](https://pdfcanon.io/portal/api-keys). Pass it to the client constructor or set the `PDFCANON_API_KEY` environment variable.
+Obtain an API key from the [PDFCanon portal](https://pdfcanon.com/portal/api-keys). Pass it to the client constructor or set the `PDFCANON_API_KEY` environment variable.
 
 The SDK sends the key as `X-Api-Key: pdfn_…` in every request. If you call the REST API directly, use the same header:
 
 ```bash
-curl -H "X-Api-Key: pdfn_your_key_here" https://api.pdfcanon.io/api/submissions
+curl -H "X-Api-Key: pdfn_your_key_here" https://api.pdfcanon.com/api/submissions
 ```
 
 ## Quickstart
@@ -77,7 +77,7 @@ PDFCanonWebhook.ValidateSignature(rawBody, signature, "your-signing-secret");
 using var client = new PDFCanonClient(new PDFCanonClientOptions
 {
     ApiKey = "pdfn_your_key",
-    BaseAddress = new Uri("https://api.pdfcanon.io/api/"),
+    BaseAddress = new Uri("https://api.pdfcanon.com/api/"),
     ConnectTimeout = TimeSpan.FromSeconds(5),
     ReadTimeout = TimeSpan.FromSeconds(120),
     MaxRetries = 3,
