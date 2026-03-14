@@ -464,7 +464,7 @@ public sealed class PDFCanonClient : IDisposable
     }
 
     private static bool IsTerminalStatus(string? status) =>
-        status is "success" or "failed" or "rejected";
+        status?.ToLowerInvariant() is "success" or "failed" or "rejected";
 
     public void Dispose()
     {
