@@ -40,6 +40,15 @@ public sealed class NormalizeResponse
 
     [JsonPropertyName("failure")]
     public FailureInfo? Failure { get; set; }
+
+    [JsonPropertyName("region")]
+    public string? Region { get; set; }
+
+    [JsonPropertyName("healthScore")]
+    public int? HealthScore { get; set; }
+
+    [JsonPropertyName("healthScoreDeductions")]
+    public List<HealthScoreDeduction>? HealthScoreDeductions { get; set; }
 }
 
 public sealed class OriginalInfo
@@ -231,4 +240,17 @@ public sealed class TamperAnomalyInfo
 
     [JsonPropertyName("location")]
     public string? Location { get; set; }
+}
+
+/// <summary>A single deduction applied to the document health score.</summary>
+public sealed class HealthScoreDeduction
+{
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
+
+    [JsonPropertyName("points")]
+    public int Points { get; set; }
+
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
 }

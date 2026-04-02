@@ -242,9 +242,88 @@ public sealed class PDFCanonClient : IDisposable
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Compares two PDFs by file path and returns a structural diff report.</summary>
+    public Task<StructuralDiffReport> CompareAsync(
+        string filePathA,
+        string filePathB,
+        bool normalizeFirst = false,
+        CancellationToken ct = default)
+    {
+        if (filePathA is null) throw new ArgumentNullException(nameof(filePathA));
+        if (filePathB is null) throw new ArgumentNullException(nameof(filePathB));
+        var streamA = File.OpenRead(filePathA);
+        var streamB = File.OpenRead(filePathB);
+        return CompareAsyncCore(streamA, Path.GetFileName(filePathA), streamB, Path.GetFileName(filePathB), normalizeFirst, ct, ownsStreams: true);
+    }
+
+    /// <summary>Compares two PDFs from streams and returns a structural diff report.</summary>
+    public Task<StructuralDiffReport> CompareAsync(
+        Stream fileStreamA,
+        string fileNameA,
+        Stream fileStreamB,
+        string fileNameB,
+        bool normalizeFirst = false,
+        CancellationToken ct = default)
+    {
+        if (fileStreamA is null) throw new ArgumentNullException(nameof(fileStreamA));
+        if (fileNameA is null) throw new ArgumentNullException(nameof(fileNameA));
+        if (fileStreamB is null) throw new ArgumentNullException(nameof(fileStreamB));
+        if (fileNameB is null) throw new ArgumentNullException(nameof(fileNameB));
+        return CompareAsyncCore(fileStreamA, fileNameA, fileStreamB, fileNameB, normalizeFirst, ct, ownsStreams: false);
+    }
+
     // -------------------------------------------------------------------------
     // Internals
     // -------------------------------------------------------------------------
+
+    private async Task<StructuralDiffReport> CompareAsyncCore(
+        Stream streamA,
+        string fileNameA,
+        Stream streamB,
+        string fileNameB,
+        bool normalizeFirst,
+        CancellationToken ct,
+        bool ownsStreams)
+    {
+        try
+        {
+            return await ExecuteWithRetryAsync(async () =>
+            {
+                if (ownsStreams)
+                {
+                    if (streamA.CanSeek) streamA.Seek(0, SeekOrigin.Begin);
+                    if (streamB.CanSeek) streamB.Seek(0, SeekOrigin.Begin);
+                }
+
+                using var content = new MultipartFormDataContent();
+
+                var fileContentA = new StreamContent(streamA);
+                fileContentA.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+                content.Add(fileContentA, "file_a", fileNameA);
+
+                var fileContentB = new StreamContent(streamB);
+                fileContentB.Headers.ContentType = new MediaTypeHeaderValue("application/pdf");
+                content.Add(fileContentB, "file_b", fileNameB);
+
+                if (normalizeFirst)
+                    content.Add(new StringContent("true"), "normalize_first");
+
+                using var response = await _http
+                    .PostAsync("compare", content, ct)
+                    .ConfigureAwait(false);
+
+                return await ParseResponseAsync<StructuralDiffReport>(response, ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (ownsStreams)
+            {
+                await streamA.DisposeAsync().ConfigureAwait(false);
+                await streamB.DisposeAsync().ConfigureAwait(false);
+            }
+        }
+    }
 
     private async Task<NormalizeResponse> NormalizeAsyncCore(
         Stream stream,
