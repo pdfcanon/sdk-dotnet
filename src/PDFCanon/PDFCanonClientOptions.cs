@@ -1,3 +1,6 @@
+using System;
+using System.Net.Http;
+
 namespace PDFCanon;
 
 /// <summary>Configuration options for <see cref="PDFCanonClient"/>.</summary>

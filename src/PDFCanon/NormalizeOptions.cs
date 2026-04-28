@@ -1,3 +1,5 @@
+using System;
+
 namespace PDFCanon;
 
 /// <summary>Options for normalizing a PDF.</summary>

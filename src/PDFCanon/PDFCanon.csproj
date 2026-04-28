@@ -1,19 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>latest</LangVersion>
-    <AssemblyName>PDFCanon</AssemblyName>
-    <RootNamespace>PDFCanon</RootNamespace>
-    <PackageId>PDFCanon</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>PDFCanon</Authors>
-    <Description>Official .NET SDK for the PDFCanon API</Description>
-    <PackageTags>pdf;normalize;pdfcanon</PackageTags>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-  </PropertyGroup>
+<PropertyGroup>
+  <PackageId>PDFCanon</PackageId>
+  <Version>1.0.0</Version>
+  <Authors>Napzoom Inc.</Authors>
+  <Company>Napzoom Inc.</Company>
+  <Description>Official .NET SDK for the PDFCanon API — normalize, sanitize, and hash PDF files deterministically.</Description>
+  <PackageTags>pdf;normalize;pdfcanon;hash;sanitize</PackageTags>
+  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  <PackageProjectUrl>https://pdfcanon.com</PackageProjectUrl>
+  <RepositoryUrl>https://github.com/PDFCanon</RepositoryUrl>
+  <RepositoryType>git</RepositoryType>
+  <PackageReadmeFile>README.md</PackageReadmeFile>
+  <PackageIcon>logo.png</PackageIcon>
+  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+</PropertyGroup>
+
+<ItemGroup>
+  <None Include="README.md" Pack="true" PackagePath="\"/>
+  <None Include="logo.png"  Pack="true" PackagePath="\"/>
+</ItemGroup>
 
 </Project>

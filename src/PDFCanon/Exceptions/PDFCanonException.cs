@@ -1,3 +1,5 @@
+using System;
+
 namespace PDFCanon.Exceptions;
 
 /// <summary>Base exception for all PDFCanon API errors.</summary>
