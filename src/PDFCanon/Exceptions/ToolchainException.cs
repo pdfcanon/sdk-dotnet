@@ -6,6 +6,7 @@ public sealed class ToolchainException : PDFCanonException
     /// <summary>Whether the error is considered transient and may succeed if retried.</summary>
     public bool Retryable { get; }
 
+    /// <summary>Initializes a new instance with the specified message, retry hint, and optional request ID.</summary>
     public ToolchainException(string message, bool retryable, string? requestId = null)
         : base(message, requestId)
     {

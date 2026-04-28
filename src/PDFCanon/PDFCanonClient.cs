@@ -18,9 +18,15 @@ public sealed class PDFCanonClient : IDisposable
         PropertyNameCaseInsensitive = true,
     };
 
+    private static readonly string SdkVersion =
+        typeof(PDFCanonClient).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+
+    private static readonly string UserAgentValue = $"pdfcanon-dotnet/{SdkVersion}";
+
     private readonly HttpClient _http;
     private readonly bool _ownsHttpClient;
     private readonly PDFCanonClientOptions _options;
+    private readonly string _apiKey;
     private bool _disposed;
 
     /// <summary>
@@ -45,6 +51,8 @@ public sealed class PDFCanonClient : IDisposable
                 "An API key must be provided via PDFCanonClientOptions.ApiKey or the PDFCANON_API_KEY environment variable.",
                 nameof(options));
 
+        _apiKey = apiKey;
+
         if (options.HttpClient is not null)
         {
             _http = options.HttpClient;
@@ -63,9 +71,6 @@ public sealed class PDFCanonClient : IDisposable
             };
             _ownsHttpClient = true;
         }
-
-        _http.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
-        _http.DefaultRequestHeaders.Add("User-Agent", "pdfcanon-dotnet/1.0.0");
     }
 
     // -------------------------------------------------------------------------
@@ -95,20 +100,13 @@ public sealed class PDFCanonClient : IDisposable
         return NormalizeAsyncCore(fileStream, fileName, options, ct, ownsStream: false);
     }
 
-    /// <summary>Submits a PDF for normalization (always returns the queued submission immediately).</summary>
-    public Task<NormalizeResponse> SubmitAsync(
-        string filePath,
-        NormalizeOptions? options = null,
-        CancellationToken ct = default)
-        => NormalizeAsync(filePath, options, ct);
-
     /// <summary>Gets the current status of a submission.</summary>
     public async Task<NormalizeResponse> GetSubmissionAsync(Guid submissionId, CancellationToken ct = default)
     {
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"submissions/{submissionId}", ct)
+                .SendAsync(CreateGetRequest($"submissions/{submissionId}"), ct)
                 .ConfigureAwait(false);
 
             return await ParseResponseAsync<NormalizeResponse>(response, ct).ConfigureAwait(false);
@@ -142,6 +140,9 @@ public sealed class PDFCanonClient : IDisposable
                 return submission;
 
             await Task.Delay(delay, effectiveCt).ConfigureAwait(false);
+
+            // Exponential backoff, capped at 30 seconds.
+            delay = TimeSpan.FromSeconds(Math.Min(delay.TotalSeconds * 2, 30));
         }
     }
 
@@ -149,25 +150,39 @@ public sealed class PDFCanonClient : IDisposable
     public async Task<byte[]> GetArtifactAsync(string normalizedSha256, CancellationToken ct = default)
     {
         if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"artifacts/{normalizedSha256}", ct)
+                .SendAsync(CreateGetRequest($"artifacts/{normalizedSha256}"), ct)
                 .ConfigureAwait(false);
 
             await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
             return await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
         }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Streams the normalized PDF for the given SHA-256 without buffering into memory.</summary>
+    public async Task<Stream> GetArtifactStreamAsync(string normalizedSha256, CancellationToken ct = default)
+    {
+        if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
+        var response = await _http
+            .SendAsync(CreateGetRequest($"artifacts/{normalizedSha256}"), HttpCompletionOption.ResponseHeadersRead, ct)
+            .ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+        return await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>Downloads the processing report bytes (JSON) for the given SHA-256.</summary>
     public async Task<byte[]> GetReportAsync(string normalizedSha256, CancellationToken ct = default)
     {
         if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"reports/{normalizedSha256}", ct)
+                .SendAsync(CreateGetRequest($"reports/{normalizedSha256}"), ct)
                 .ConfigureAwait(false);
 
             await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
@@ -175,19 +190,44 @@ public sealed class PDFCanonClient : IDisposable
         }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Streams the processing report for the given SHA-256 without buffering into memory.</summary>
+    public async Task<Stream> GetReportStreamAsync(string normalizedSha256, CancellationToken ct = default)
+    {
+        if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
+        var response = await _http
+            .SendAsync(CreateGetRequest($"reports/{normalizedSha256}"), HttpCompletionOption.ResponseHeadersRead, ct)
+            .ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+        return await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+    }
+
     /// <summary>Downloads the signed attestation certificate (JWS) for the given normalized SHA-256.</summary>
     public async Task<byte[]> GetCertificateAsync(string normalizedSha256, CancellationToken ct = default)
     {
         if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"certificates/{normalizedSha256}", ct)
+                .SendAsync(CreateGetRequest($"certificates/{normalizedSha256}"), ct)
                 .ConfigureAwait(false);
 
             await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
             return await response.Content.ReadAsByteArrayAsync(ct).ConfigureAwait(false);
         }, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Streams the signed attestation certificate (JWS) for the given normalized SHA-256 without buffering into memory.</summary>
+    public async Task<Stream> GetCertificateStreamAsync(string normalizedSha256, CancellationToken ct = default)
+    {
+        if (normalizedSha256 is null) throw new ArgumentNullException(nameof(normalizedSha256));
+        ValidateSha256(normalizedSha256, nameof(normalizedSha256));
+        var response = await _http
+            .SendAsync(CreateGetRequest($"certificates/{normalizedSha256}"), HttpCompletionOption.ResponseHeadersRead, ct)
+            .ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+        return await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>Creates a new batch group for tracking bulk normalization workflows.</summary>
@@ -198,7 +238,7 @@ public sealed class PDFCanonClient : IDisposable
             var payload = JsonSerializer.Serialize(new { name, webhook_url = webhookUrl });
             using var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
             using var response = await _http
-                .PostAsync("batches/", content, ct)
+                .SendAsync(CreatePostRequest("batches/", content), ct)
                 .ConfigureAwait(false);
 
             return await ParseResponseAsync<BatchResponse>(response, ct).ConfigureAwait(false);
@@ -211,7 +251,7 @@ public sealed class PDFCanonClient : IDisposable
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"batches/{batchId}", ct)
+                .SendAsync(CreateGetRequest($"batches/{batchId}"), ct)
                 .ConfigureAwait(false);
 
             return await ParseResponseAsync<BatchResponse>(response, ct).ConfigureAwait(false);
@@ -227,7 +267,7 @@ public sealed class PDFCanonClient : IDisposable
             if (!string.IsNullOrEmpty(status)) query += $"&status={Uri.EscapeDataString(status)}";
 
             using var response = await _http
-                .GetAsync(query, ct)
+                .SendAsync(CreateGetRequest(query), ct)
                 .ConfigureAwait(false);
 
             return await ParseResponseAsync<ListBatchesResponse>(response, ct).ConfigureAwait(false);
@@ -240,7 +280,7 @@ public sealed class PDFCanonClient : IDisposable
         return await ExecuteWithRetryAsync(async () =>
         {
             using var response = await _http
-                .GetAsync($"batches/{batchId}/submissions?page={page}&page_size={pageSize}", ct)
+                .SendAsync(CreateGetRequest($"batches/{batchId}/submissions?page={page}&page_size={pageSize}"), ct)
                 .ConfigureAwait(false);
 
             return await ParseResponseAsync<ListBatchSubmissionsResponse>(response, ct).ConfigureAwait(false);
@@ -290,15 +330,14 @@ public sealed class PDFCanonClient : IDisposable
         CancellationToken ct,
         bool ownsStreams)
     {
+        // Retries are only safe when both streams can be rewound.
+        int effectiveMaxRetries = (streamA.CanSeek && streamB.CanSeek) ? _options.MaxRetries : 0;
         try
         {
             return await ExecuteWithRetryAsync(async () =>
             {
-                if (ownsStreams)
-                {
-                    if (streamA.CanSeek) streamA.Seek(0, SeekOrigin.Begin);
-                    if (streamB.CanSeek) streamB.Seek(0, SeekOrigin.Begin);
-                }
+                if (streamA.CanSeek) streamA.Seek(0, SeekOrigin.Begin);
+                if (streamB.CanSeek) streamB.Seek(0, SeekOrigin.Begin);
 
                 using var content = new MultipartFormDataContent();
 
@@ -314,11 +353,11 @@ public sealed class PDFCanonClient : IDisposable
                     content.Add(new StringContent("true"), "normalize_first");
 
                 using var response = await _http
-                    .PostAsync("compare", content, ct)
+                    .SendAsync(CreatePostRequest("compare", content), ct)
                     .ConfigureAwait(false);
 
                 return await ParseResponseAsync<StructuralDiffReport>(response, ct).ConfigureAwait(false);
-            }, ct).ConfigureAwait(false);
+            }, ct, effectiveMaxRetries).ConfigureAwait(false);
         }
         finally
         {
@@ -337,21 +376,23 @@ public sealed class PDFCanonClient : IDisposable
         CancellationToken ct,
         bool ownsStream)
     {
+        // Retries are only safe when the stream can be rewound.
+        int effectiveMaxRetries = stream.CanSeek ? _options.MaxRetries : 0;
         try
         {
             return await ExecuteWithRetryAsync(async () =>
             {
-                // Reset stream position for retries when the stream supports seeking.
-                if (ownsStream && stream.CanSeek)
+                // Reset stream position for retries.
+                if (stream.CanSeek)
                     stream.Seek(0, SeekOrigin.Begin);
 
                 using var content = BuildMultipartContent(stream, fileName, options);
                 using var response = await _http
-                    .PostAsync("normalize", content, ct)
+                    .SendAsync(CreatePostRequest("normalize", content), ct)
                     .ConfigureAwait(false);
 
                 return await ParseResponseAsync<NormalizeResponse>(response, ct).ConfigureAwait(false);
-            }, ct).ConfigureAwait(false);
+            }, ct, effectiveMaxRetries).ConfigureAwait(false);
         }
         finally
         {
@@ -398,9 +439,36 @@ public sealed class PDFCanonClient : IDisposable
         return content;
     }
 
-    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken ct)
+    private HttpRequestMessage CreateGetRequest(string relativeUri)
     {
-        int maxRetries = _options.MaxRetries;
+        var req = new HttpRequestMessage(HttpMethod.Get, relativeUri);
+        req.Headers.Add("X-Api-Key", _apiKey);
+        req.Headers.Add("User-Agent", UserAgentValue);
+        return req;
+    }
+
+    private HttpRequestMessage CreatePostRequest(string relativeUri, HttpContent content)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, relativeUri) { Content = content };
+        req.Headers.Add("X-Api-Key", _apiKey);
+        req.Headers.Add("User-Agent", UserAgentValue);
+        return req;
+    }
+
+    private static void ValidateSha256(string value, string paramName)
+    {
+        if (value.Length != 64)
+            throw new ArgumentException("Must be a valid 64-character hex-encoded SHA-256 hash.", paramName);
+        for (int i = 0; i < value.Length; i++)
+        {
+            if (!Uri.IsHexDigit(value[i]))
+                throw new ArgumentException("Must be a valid 64-character hex-encoded SHA-256 hash.", paramName);
+        }
+    }
+
+    private async Task<T> ExecuteWithRetryAsync<T>(Func<Task<T>> action, CancellationToken ct, int? maxRetriesOverride = null)
+    {
+        int maxRetries = maxRetriesOverride ?? _options.MaxRetries;
         int attempt = 0;
 
         while (true)
@@ -550,6 +618,7 @@ public sealed class PDFCanonClient : IDisposable
     private static bool IsTerminalStatus(string? status) =>
         status?.ToLowerInvariant() is "success" or "failed" or "rejected";
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (_disposed) return;

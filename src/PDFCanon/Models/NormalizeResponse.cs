@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member (DTOs)
+
 namespace PDFCanon.Models;
 
 /// <summary>Represents the full response returned by the PDFCanon API for a normalization job.</summary>
@@ -53,6 +55,7 @@ public sealed class NormalizeResponse
     public List<HealthScoreDeduction>? HealthScoreDeductions { get; set; }
 }
 
+/// <summary>Original file information captured before normalization.</summary>
 public sealed class OriginalInfo
 {
     [JsonPropertyName("sha256")]
@@ -62,6 +65,7 @@ public sealed class OriginalInfo
     public long SizeBytes { get; set; }
 }
 
+/// <summary>Properties of the normalized output file.</summary>
 public sealed class NormalizedInfo
 {
     [JsonPropertyName("sha256")]
@@ -83,6 +87,7 @@ public sealed class NormalizedInfo
     public string? ContentHash { get; set; }
 }
 
+/// <summary>Active content and security element removal summary.</summary>
 public sealed class SecurityInfo
 {
     [JsonPropertyName("javascriptRemoved")]
@@ -159,6 +164,7 @@ public sealed class SignatureVerificationResult
     public string? Reason { get; set; }
 }
 
+/// <summary>Structural validation and PDF/A compliance results.</summary>
 public sealed class ValidationInfo
 {
     [JsonPropertyName("xrefRebuilt")]
@@ -194,6 +200,7 @@ public sealed class ValidationInfo
     public List<string>? VerapdfErrors { get; set; }
 }
 
+/// <summary>A non-fatal warning raised during normalization.</summary>
 public sealed class WarningInfo
 {
     [JsonPropertyName("code")]
@@ -203,6 +210,7 @@ public sealed class WarningInfo
     public string? Message { get; set; }
 }
 
+/// <summary>Details about a terminal failure that prevented normalization.</summary>
 public sealed class FailureInfo
 {
     [JsonPropertyName("code")]

@@ -14,8 +14,21 @@
   <PackageReadmeFile>README.md</PackageReadmeFile>
   <PackageIcon>logo.png</PackageIcon>
   <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  <Nullable>enable</Nullable>
   <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 </PropertyGroup>
+
+<PropertyGroup>
+  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+  <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  <DebugType>portable</DebugType>
+  <IncludeSymbols>true</IncludeSymbols>
+  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+</PropertyGroup>
+
+<ItemGroup>
+  <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
+</ItemGroup>
 
 <ItemGroup>
   <None Include="README.md" Pack="true" PackagePath="\"/>

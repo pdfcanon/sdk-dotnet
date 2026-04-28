@@ -47,3 +47,26 @@ public sealed class NormalizeOptions
     /// </summary>
     public Guid? BatchId { get; set; }
 }
+
+/// <summary>Well-known values for <see cref="NormalizeOptions.SignedPdfPolicy"/>.</summary>
+public static class SignedPdfPolicies
+{
+    /// <summary>Reject the submission with code <c>SIGNED_PDF</c> (default).</summary>
+    public const string Reject = "reject";
+
+    /// <summary>Remove signatures and continue normalization.</summary>
+    public const string Strip = "strip";
+
+    /// <summary>Return the original file unchanged.</summary>
+    public const string Preserve = "preserve";
+}
+
+/// <summary>Well-known values for <see cref="NormalizeOptions.PdfaPolicy"/>.</summary>
+public static class PdfaPolicies
+{
+    /// <summary>Allow safe structural operations while preserving PDF/A metadata (default).</summary>
+    public const string Preserve = "preserve";
+
+    /// <summary>Perform full normalization including XMP stripping. Adds warning <c>PDF_A_COMPLIANCE_REMOVED</c>.</summary>
+    public const string NormalizeAnyway = "normalize_anyway";
+}

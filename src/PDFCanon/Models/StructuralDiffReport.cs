@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member (DTOs)
+
 namespace PDFCanon.Models;
 
 /// <summary>Full structural diff report returned by the <c>POST /compare</c> endpoint.</summary>
@@ -31,6 +33,7 @@ public sealed class StructuralDiffReport
     public List<FontDiff>? Fonts { get; set; }
 }
 
+/// <summary>High-level summary of the structural diff result.</summary>
 public sealed class DiffSummary
 {
     [JsonPropertyName("totalChanges")]
@@ -43,6 +46,7 @@ public sealed class DiffSummary
     public bool Identical { get; set; }
 }
 
+/// <summary>A single metadata field that changed between the two documents.</summary>
 public sealed class MetadataDiffEntry
 {
     [JsonPropertyName("field")]
@@ -55,6 +59,7 @@ public sealed class MetadataDiffEntry
     public string? NewValue { get; set; }
 }
 
+/// <summary>Page-level additions, removals, and reorders between the two documents.</summary>
 public sealed class PagesDiff
 {
     [JsonPropertyName("added")]
@@ -67,6 +72,7 @@ public sealed class PagesDiff
     public List<PageReorder>? Reordered { get; set; }
 }
 
+/// <summary>Identity information for a single page.</summary>
 public sealed class PageInfo
 {
     [JsonPropertyName("pageNumber")]
@@ -76,6 +82,7 @@ public sealed class PageInfo
     public string? ContentHash { get; set; }
 }
 
+/// <summary>A page that changed position between the two documents.</summary>
 public sealed class PageReorder
 {
     [JsonPropertyName("oldPosition")]
@@ -88,6 +95,7 @@ public sealed class PageReorder
     public string? ContentHash { get; set; }
 }
 
+/// <summary>Summary count of PDF object additions and removals.</summary>
 public sealed class ObjectsDiff
 {
     [JsonPropertyName("added")]
@@ -103,6 +111,7 @@ public sealed class ObjectsDiff
     public int TotalB { get; set; }
 }
 
+/// <summary>A form field that was added, removed, or whose value changed.</summary>
 public sealed class FormFieldDiff
 {
     [JsonPropertyName("fieldName")]
@@ -118,6 +127,7 @@ public sealed class FormFieldDiff
     public string? NewValue { get; set; }
 }
 
+/// <summary>An annotation that was added or removed.</summary>
 public sealed class AnnotationDiff
 {
     [JsonPropertyName("page")]
@@ -130,6 +140,7 @@ public sealed class AnnotationDiff
     public string? Action { get; set; }
 }
 
+/// <summary>A security-related setting that changed between the two documents.</summary>
 public sealed class SecurityDiffEntry
 {
     [JsonPropertyName("field")]
@@ -142,6 +153,7 @@ public sealed class SecurityDiffEntry
     public string? NewValue { get; set; }
 }
 
+/// <summary>A font that was added or removed.</summary>
 public sealed class FontDiff
 {
     [JsonPropertyName("name")]

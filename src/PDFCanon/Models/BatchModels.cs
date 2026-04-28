@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member (DTOs)
+
 namespace PDFCanon.Models;
 
 /// <summary>Represents a batch group for tracking bulk normalization workflows.</summary>
@@ -41,6 +43,9 @@ public sealed class BatchResponse
 /// <summary>Paginated list of batch groups.</summary>
 public sealed class ListBatchesResponse
 {
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
+
     [JsonPropertyName("page")]
     public int Page { get; set; }
 
@@ -78,6 +83,9 @@ public sealed class ListBatchSubmissionsResponse
 {
     [JsonPropertyName("batch_id")]
     public string? BatchId { get; set; }
+
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
 
     [JsonPropertyName("page")]
     public int Page { get; set; }

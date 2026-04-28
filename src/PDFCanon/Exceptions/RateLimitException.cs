@@ -6,6 +6,7 @@ public sealed class RateLimitException : PDFCanonException
     /// <summary>Milliseconds to wait before retrying, as indicated by the Retry-After header.</summary>
     public int RetryAfterMs { get; }
 
+    /// <summary>Initializes a new instance with the specified message, retry delay, and optional request ID.</summary>
     public RateLimitException(string message, int retryAfterMs, string? requestId = null)
         : base(message, requestId)
     {

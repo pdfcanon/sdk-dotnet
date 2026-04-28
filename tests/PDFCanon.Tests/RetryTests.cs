@@ -185,10 +185,17 @@ public class RetryTests
     [Fact]
     public void Constructor_NoApiKey_ThrowsArgumentException()
     {
-        Environment.SetEnvironmentVariable("PDFCANON_API_KEY", null);
-        var options = new PDFCanonClientOptions { ApiKey = null };
-
-        Assert.Throws<ArgumentException>(() => new PDFCanonClient(options));
+        var previous = Environment.GetEnvironmentVariable("PDFCANON_API_KEY");
+        try
+        {
+            Environment.SetEnvironmentVariable("PDFCANON_API_KEY", null);
+            var options = new PDFCanonClientOptions { ApiKey = null };
+            Assert.Throws<ArgumentException>(() => new PDFCanonClient(options));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("PDFCANON_API_KEY", previous);
+        }
     }
 
     [Fact]
