@@ -24,10 +24,12 @@ public static class PDFCanonWebhook
         if (signatureHeader is null) throw new ArgumentNullException(nameof(signatureHeader));
         if (secret is null) throw new ArgumentNullException(nameof(secret));
 
-        if (!signatureHeader.StartsWith(SignaturePrefix, StringComparison.OrdinalIgnoreCase))
-            return false;
-
-        var providedHex = signatureHeader[SignaturePrefix.Length..];
+        // PDFCanon sends a bare lowercase hex digest (see docs-site/docs/webhooks-reference.md).
+        // The `sha256=` prefix is tolerated for receivers written against older SDK versions,
+        // which rejected the bare form before comparing anything.
+        string providedHex = signatureHeader.Trim();
+        if (providedHex.StartsWith(SignaturePrefix, StringComparison.OrdinalIgnoreCase))
+            providedHex = providedHex[SignaturePrefix.Length..];
 
         byte[] key = Encoding.UTF8.GetBytes(secret);
         byte[] computedHash = HMACSHA256.HashData(key, rawBody);

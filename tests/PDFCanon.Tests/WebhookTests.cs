@@ -52,8 +52,10 @@ public class WebhookTests
     }
 
     [Fact]
-    public void VerifySignature_MissingPrefix_ReturnsFalse()
+    public void VerifySignature_BareHex_ReturnsTrue()
     {
+        // PDFCanon sends the digest without a prefix; older SDKs rejected this form, so every
+        // delivery from the real server failed verification.
         const string body = "payload";
         byte[] key = Encoding.UTF8.GetBytes(Secret);
         byte[] hash = HMACSHA256.HashData(key, Encoding.UTF8.GetBytes(body));
@@ -61,7 +63,18 @@ public class WebhookTests
 
         bool result = PDFCanonWebhook.VerifySignature(body, header, Secret);
 
-        Assert.False(result);
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void VerifySignature_BareHexWrongSecret_ReturnsFalse()
+    {
+        const string body = "payload";
+        byte[] key = Encoding.UTF8.GetBytes("other-secret");
+        byte[] hash = HMACSHA256.HashData(key, Encoding.UTF8.GetBytes(body));
+        string header = Convert.ToHexString(hash).ToLowerInvariant();
+
+        Assert.False(PDFCanonWebhook.VerifySignature(body, header, Secret));
     }
 
     [Fact]
